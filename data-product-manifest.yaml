@@ -1,0 +1,204 @@
+jobId: "1048"
+jobName: Automotive 360
+jobType: Aggregated Data Product
+developerId: 42825798-b98f-41c3-954a-c0722b747faf
+domain: market_quality
+alias: loading_Automotive_360_data_in_iceberg
+discoveryPort:
+  name: Automotive 360
+inputPorts:
+  - alias: Automotive_KPI_1
+    isDynamic: true
+    path: s3a://dataverse/testbed/automobile/automotive_360.csv
+    optional:
+      persistDataFrame: false
+      advanceOptions:
+        delimiter: ","
+      enableDataReconciliation: false
+      enforceSchema: false
+      connection: S3 Connection - Market Quality KPI
+      dataSetUrn: urn:dv:dataset:921c4946-88dd-4c00-8da9-e8d8c64e00bb
+    type: inputDelimited
+  - alias: Market_Quality_1
+    isDynamic: true
+    dataProductUrn: urn:dv:dataproduct:aff2de4a-6d11-4147-a5a0-0f3cfd04b19a
+    filter: ""
+    projection: ""
+    optional:
+      persistDataFrame: false
+    type: dataproduct
+  - alias: Sales_Invoice_1
+    isDynamic: true
+    dataProductUrn: urn:dv:dataproduct:cba44104-ea5a-4d04-a2ca-bab824a2d8c3
+    filter: ""
+    projection: ""
+    optional:
+      persistDataFrame: false
+    type: dataproduct
+  - alias: Inventory_1
+    isDynamic: true
+    dataProductUrn: urn:dv:dataproduct:dc756f51-6975-4797-839b-bd00d1b9a482
+    filter: ""
+    projection: ""
+    optional:
+      persistDataFrame: false
+    type: dataproduct
+  - alias: Port_Management_1
+    isDynamic: true
+    dataProductUrn: urn:dv:dataproduct:d9148067-c21f-4ddb-8bc7-af9ee5efb823
+    filter: ""
+    projection: ""
+    optional:
+      persistDataFrame: false
+    type: dataproduct
+productState:
+  isDynamic: true
+  alias: loading_Automotive_360_data_in_iceberg
+  retentionVersions: ""
+  logicalSchema:
+    properties:
+      Year_Month:
+        type: STRING
+        description: Year and month reference for aggregations
+        sourceColumn: Cust_Ord_Mnth
+        sourceTable: Port_Management_System
+      production_volume:
+        type: STRING
+        description: Volume of vehicles produced based on inventory item codes
+        sourceColumn: item_code
+        sourceTable: Inventory
+      dispatch_rate:
+        type: STRING
+        description: Rate of vehicles dispatched from plant
+        sourceColumn: order_number
+        sourceTable: Sales_Invoice
+      sales_volume:
+        type: STRING
+        description: Total vehicle sales volume
+        sourceColumn: invoice_number
+        sourceTable: Sales_Invoice
+      order_fulfillment_rate:
+        type: STRING
+        description: Rate of customer orders fulfilled
+        sourceColumn: order_number
+        sourceTable: Sales_Invoice
+      warranty_claim_rate:
+        type: STRING
+        description: Percentage of warranty claims raised
+        sourceColumn: warranty_failure_rate
+        sourceTable: Market_Quality
+      recall_rate:
+        type: STRING
+        description: Rate of vehicle recalls triggered due to system failure
+        sourceColumn: system_failure_rate
+        sourceTable: Market_Quality
+      defect_rate:
+        type: STRING
+        description: Rate of defects found in vehicles
+        sourceColumn: failure_severity_score
+        sourceTable: Market_Quality
+      avg_repair_tat:
+        type: STRING
+        description: Average repair turn-around time
+        sourceColumn: time_to_repair_hours
+        sourceTable: Market_Quality
+      on_time_delivery_rate:
+        type: STRING
+        description: On-time vehicle delivery performance
+        sourceColumn: ship_date
+        sourceTable: Port_Management_System
+      inventory_turnover_ratio:
+        type: STRING
+        description: Inventory efficiency measured using stock movement
+        sourceColumn: stock
+        sourceTable: Inventory
+      stock_out_rate:
+        type: STRING
+        description: Rate at which inventory reaches minimum threshold
+        sourceColumn: min_level
+        sourceTable: Inventory
+      vendor_otd_rate:
+        type: STRING
+        description: Vendor on-time delivery rate
+        sourceColumn: REGNO
+        sourceTable: Port_Management_System
+      port_dwell_time:
+        type: STRING
+        description: Average time a vehicle spends at port
+        sourceColumn: ORDER_NO
+        sourceTable: Port_Management_System
+      customer_complaint_rate:
+        type: STRING
+        description: Rate of customer complaints related to invoicing or delivery
+        sourceColumn: complaint_flag
+        sourceTable: Sales_Invoice
+      vehicle_hold_rate:
+        type: STRING
+        description: Rate of vehicles kept on hold due to process issues
+        sourceColumn: STATUS
+        sourceTable: Port_Management_System
+      yard_utilization:
+        type: STRING
+        description: Yard utilization efficiency based on parking and movement
+        sourceColumn: location
+        sourceTable: Port_Management_System
+      invoice_accuracy_rate:
+        type: STRING
+        description: Accuracy of invoicing against booked orders
+        sourceColumn: invoice_amount
+        sourceTable: Sales_Invoice
+      transit_damage_rate:
+        type: STRING
+        description: Rate of vehicles damaged during transit
+        sourceColumn: defect_cd
+        sourceTable: Sales_Invoice
+      morth_compliance_rate:
+        type: STRING
+        description: Compliance rate with MoRTH regulations
+        sourceColumn: inspection_code
+        sourceTable: Sales_Invoice
+      section_productivity:
+        type: STRING
+        description: Productivity KPI for various operational sections
+        sourceColumn: department
+        sourceTable: Inventory
+  stateStoreType: loadDataIceberg
+  isProfilingEnabled: false
+  updateStrategy: Overwrite
+  tableName: iceberg_meta.automotive_overall
+  warehousePath: s3a://dataverse/testbed_load/
+  catalogName: postgres_catalog
+  optional:
+    persistDataFrame: false
+    enableDataReconciliation: false
+    enforceSchema: true
+    enforceSchemaMethod: Warning
+    catalogType: postgres
+    connection: S3 Connection
+    loggingOptions:
+      printSchema: true
+  refreshInterval: 30 5 * * *
+transformation:
+  - isDynamic: true
+    alias: Transform
+    description: transforming automotive 360 data
+    sequence: 6
+    inputDataFrameList:
+      - inputDataFrame: Automotive_KPI_1
+        tempViewName: AK
+      - inputDataFrame: Market_Quality_1
+        tempViewName: MQ
+      - inputDataFrame: Inventory_1
+        tempViewName: IN
+      - inputDataFrame: Sales_Invoice_1
+        tempViewName: SI
+      - inputDataFrame: Port_Management_1
+        tempViewName: PM
+    query: select * from AK
+    optional:
+      persistDataFrame: false
+      loggingOptions:
+        printSchema: true
+    type: operationThroughSqlQuery
+controlPort:
+  dataQualityRules: {}
