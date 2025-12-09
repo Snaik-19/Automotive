@@ -201,4 +201,14 @@ transformation:
         printSchema: true
     type: operationThroughSqlQuery
 controlPort:
-  dataQualityRules: {}
+  dataQualityRules:
+    NullValueCheck:
+      productState:
+        checks:
+          - column: Year_Month
+        referenceAlias: loading_Automotive_360_data_in_iceberg
+    UniquenessCheck:
+      productState:
+        checks:
+          - column: Year_Month
+        referenceAlias: loading_Automotive_360_data_in_iceberg
